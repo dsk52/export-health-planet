@@ -3,26 +3,26 @@ import requests
 from datetime import datetime, timedelta
 import calendar
 import json
+import csv
 from requests.exceptions import HTTPError
 from collections import OrderedDict
 
 STATUS_API = 'https://www.healthplanet.jp/status/innerscan.json'
 DATE_FORMAT = "%Y%m%d%H%M%S"
 
-def one_month_health_status():
+def one_month_health_status(today):
     """
     今月の測定記録を取得
     """
-    today = datetime.today()
     this_month = calendar.monthrange(today.year, today.month)
     last_date = this_month[1]
 
     first_datetime = today.replace(day=1, hour=0, minute=0, second=0)
     last_datetime = today.replace(day=last_date, hour=23, minute=59, second=59)
 
-    return __health_status(start=first_datetime.strftime(DATE_FORMAT), end=last_datetime.strftime(DATE_FORMAT))
+    return fetch_health_status(start=first_datetime.strftime(DATE_FORMAT), end=last_datetime.strftime(DATE_FORMAT))
 
-def __health_status(start, end):
+def fetch_health_status(start, end):
     """
     StatusのAPI から体重のデータを抜き出す
     @url https://www.healthplanet.jp/apis/api.html
@@ -49,27 +49,33 @@ def readMockFile():
 
 def formattingData(datas):
     """
-    日付ベースで各データをまとめる
+    計測日ベースで各データをまとめる
     """
     if 'data' not in datas:
         raise Exception('データの形式が変わったか・有りません')
 
     health_status_list = OrderedDict()
     for data in datas['data']:
-        date = int(data['date'])
+        date = data['date']
         health_status_list[date] = OrderedDict()
 
     for data in datas['data']:
-        date = int(data['date'])
+        date = data['date']
         tag = data['tag']
         keydata = data['keydata']
         health_status_list[date][tag] = keydata
 
-    return json.dumps(health_status_list)
+    return health_status_list
+
+def output(output_path, datas):
+    json_file = open(output_path, 'w')
+    json.dump(datas, json_file, indent=2)
 
 
 if __name__ == '__main__':
-    # health_status = one_month_health_status()
-    mock = readMockFile()
-    data = formattingData(mock)
-    print(data)
+    today = datetime.today()
+    file_path = f'''./dist/{today.strftime("%Y%m")}.json'''
+    # health_status = one_month_health_status(today)
+    health_status = readMockFile()
+    datas = formattingData(health_status)
+    output(file_path, datas)
