@@ -7,7 +7,12 @@ headlth planet からデータ収集するスクリプトです
 ## セットアップ
 
 ```
-$ pip install
+$ python -m venv venv
+$ source venv/bin/activate
+or
+$ source venv/bin/activate.fish
+
+$ pip install -r requirements.txt
 ```
 
 ### アカウント登録と連携アプリを作成
@@ -30,4 +35,12 @@ $ direnv edit .
 // HEALTH_ACCESS_TOKEN にアクセストークンを追加
 
 $ direnv allow
+```
+
+## 実行
+
+```
+$ python health_status.py
+
+# output to dist dir
 ```
