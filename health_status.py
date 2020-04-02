@@ -47,35 +47,38 @@ def readMockFile():
         datas = json.load(f)
     return datas
 
-def formattingData(datas):
+def formattingData(json_str):
     """
     計測日ベースで各データをまとめる
     """
-    if 'data' not in datas:
-        raise Exception('データの形式が変わったか・有りません')
+    datas = json.loads(json_str)
 
     health_status_list = OrderedDict()
     for data in datas['data']:
-        date = data['date']
+        date = int(data['date'])
         health_status_list[date] = OrderedDict()
 
     for data in datas['data']:
-        date = data['date']
+        date = int(data['date'])
         tag = data['tag']
         keydata = data['keydata']
         health_status_list[date][tag] = keydata
 
     return health_status_list
 
-def output(output_path, datas):
+def output(file_name, datas):
+    output_dir = './dist/'
+    os.makedirs(output_dir, exist_ok=True) # ディレクトリを作成
+
+    output_path = output_dir + file_name
     json_file = open(output_path, 'w')
     json.dump(datas, json_file, indent=2)
 
 
 if __name__ == '__main__':
     today = datetime.today()
-    file_path = f'''./dist/{today.strftime("%Y%m")}.json'''
-    # health_status = one_month_health_status(today)
-    health_status = readMockFile()
+    file_name = f'''{today.strftime("%Y%m")}.json'''
+    health_status = one_month_health_status(today)
+    # health_status = readMockFile()
     datas = formattingData(health_status)
-    output(file_path, datas)
+    output(file_name, datas)
